@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trade Junction AI | Indian Stock Scanner & Trading Terminal</title>
+  <meta name="description" content="Institutional-grade AI stock scanner and options momentum terminal for NSE/BSE Indian markets with live technical signals, EMA, RSI, MACD, VWAP, Supertrend, and automated trade setups." />
+  <meta name="theme-color" content="#0b0f19" />
+  <link rel="manifest" href="manifest.json" />
+  
+  <!-- Google Fonts: Inter & JetBrains Mono for financial data -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Main Stylesheet -->
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body class="theme-dark">
+  <div id="app" class="app-layout">
+    
+    <!-- TOP NOTIFICATION BANNER / TICKER TAPE -->
+    <header class="terminal-header">
+      <div class="header-top">
+        <div class="brand-group">
+          <div class="brand-logo">
+            <span class="logo-icon">⚡</span>
+            <div class="logo-text">
+              <span class="brand-title">Trade Junction <span class="badge-ai">AI PRO</span></span>
+              <span class="brand-subtitle">NSE & BSE Real-Time Confluence Terminal</span>
+            </div>
+          </div>
+          
+          <div class="market-status-pill" id="marketStatusPill">
+            <span class="status-dot pulse"></span>
+            <span class="status-text" id="marketStatusText">NSE LIVE</span>
+            <span class="status-time" id="istClock">09:15:00 IST</span>
+          </div>
+        </div>
+
+        <!-- Global Action Controls -->
+        <div class="header-actions">
+          <div class="live-data-badge" id="liveDataSyncBadge" title="Real-time NSE/BSE Exchange Connection">
+            <span class="live-pulse-dot"></span>
+            <span id="liveDataSyncText">🟢 REAL NSE FEED</span>
+            <span class="sync-time" id="lastSyncTimeLabel">Synced</span>
+          </div>
+
+          <button id="refreshLiveQuotesBtn" class="btn-icon btn-sync" title="Sync Fresh Real Live Quotes from NSE">
+            <span id="refreshIcon">🔄</span>
+          </button>
+
+          <div class="live-toggle-group">
+            <button id="claudeAiSettingsBtn" class="btn-toggle btn-ai-glow" title="Configure Claude AI Engine">
+              <span class="toggle-icon">🧠</span>
+              <span class="toggle-label">Claude AI</span>
+            </button>
+            <button id="liveSimToggle" class="btn-toggle active" title="Toggle Live Exchange Stream">
+              <span class="toggle-icon">●</span>
+              <span class="toggle-label">Auto-Sync</span>
+            </button>
+            <button id="soundToggle" class="btn-icon" title="Toggle Audio Chime on Signals">
+              <span id="soundIcon">🔊</span>
+            </button>
+            <button id="themeToggle" class="btn-icon" title="Toggle Light/Dark Terminal Theme">
+              <span id="themeIcon">🌙</span>
+            </button>
+          </div>
+
+          <div class="fii-dii-pill" id="fiiDiiQuick">
+            <span class="pill-label">FII: <strong class="text-bull" id="quickFII">+₹1,420 Cr</strong></span>
+            <span class="pill-divider">|</span>
+            <span class="pill-label">DII: <strong class="text-bull" id="quickDII">+₹890 Cr</strong></span>
+          </div>
+
+          <!-- User Profile & Logout Action -->
+          <div class="user-profile-menu" id="userProfileMenu">
+            <div class="user-avatar-pill" id="userProfilePill">
+              <span class="user-avatar-icon">👤</span>
+              <div class="user-info-text">
+                <span class="user-name-display" id="headerUserName">Admin Trader</span>
+                <span class="user-tier-badge" id="headerUserPlan">PRO VIP</span>
+              </div>
+            </div>
+            <button id="headerLogoutBtn" class="btn-icon btn-logout" title="Lock / Logout Terminal">
+              <span>🚪</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- MAJOR INDICES TICKER TAPE -->
+      <div class="indices-ticker-tape" id="indicesTicker">
+        <!-- Injected dynamically by JS -->
+      </div>
+    </header>
+
+    <!-- NAVIGATION TABS -->
+    <nav class="terminal-nav">
+      <div class="nav-tabs-container">
+        <button class="nav-tab active" data-tab="scanner">
+          <span class="tab-icon">🤖</span>
+          <span>AI Stock Scanner</span>
+          <span class="tab-badge" id="scannerCountBadge">50</span>
+        </button>
+        <button class="nav-tab" data-tab="options">
+          <span class="tab-icon">⚡</span>
+          <span>Options Scanner (F&O)</span>
+          <span class="tab-badge badge-accent">NIFTY/BANKNIFTY</span>
+        </button>
+        <button class="nav-tab" data-tab="signals">
+          <span class="tab-icon">📈</span>
+          <span>Live Signal Feed</span>
+          <span class="tab-badge badge-signal-count" id="feedCountBadge">0</span>
+        </button>
+        <button class="nav-tab" data-tab="watchlist">
+          <span class="tab-icon">⭐</span>
+          <span>My Watchlist</span>
+          <span class="tab-badge" id="watchlistCountBadge">0</span>
+        </button>
+        <button class="nav-tab" data-tab="overview">
+          <span class="tab-icon">📊</span>
+          <span>Market Breadth & Sectors</span>
+        </button>
+      </div>
+
+      <div class="nav-secondary-actions">
+        <button class="btn-guide-trigger" id="openGuideBtn">
+          <span>ℹ️ AI Confluence Formula</span>
+        </button>
+      </div>
+    </nav>
+
+    <!-- MAIN CONTENT VIEWPORT -->
+    <main class="terminal-main">
+      
+      <!-- ================= TAB 1: AI STOCK SCANNER ================= -->
+      <section id="tab-scanner" class="tab-pane active">
+        <!-- FILTER & CONTROLS TOOLBAR -->
+        <div class="scanner-toolbar">
+          <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="stockSearchInput" placeholder="Search NSE stocks (e.g. RELIANCE, HDFCBANK, INFY)..." autocomplete="off" />
+            <button id="clearSearchBtn" class="btn-clear-search hidden">✕</button>
+          </div>
+
+          <!-- Timeframe Selector -->
+          <div class="filter-group">
+            <span class="filter-label">Timeframe:</span>
+            <div class="segmented-control" id="timeframeControl">
+              <button class="segment-btn" data-tf="1m">1m</button>
+              <button class="segment-btn" data-tf="5m">5m</button>
+              <button class="segment-btn active" data-tf="15m">15m</button>
+              <button class="segment-btn" data-tf="1h">1H</button>
+              <button class="segment-btn" data-tf="1D">1D</button>
+            </div>
+          </div>
+
+          <!-- Signal Filter -->
+          <div class="filter-group">
+            <span class="filter-label">Signal:</span>
+            <select id="signalFilterSelect" class="custom-select">
+              <option value="ALL">All Signals</option>
+              <option value="STRONG_BUY">🟢 Strong Buy (Score 80+)</option>
+              <option value="BUY">🟢 Buy (Score 65-79)</option>
+              <option value="WATCH">🟡 Watch (Score 45-64)</option>
+              <option value="SELL">🔴 Sell (Score 25-44)</option>
+              <option value="STRONG_SELL">🔴 Strong Sell (&lt;25)</option>
+            </select>
+          </div>
+
+          <!-- Strategy Preset Filter -->
+          <div class="filter-group">
+            <span class="filter-label">AI Strategy:</span>
+            <select id="strategyFilterSelect" class="custom-select">
+              <option value="ALL">All Strategies</option>
+              <option value="EMA_CROSS">EMA 9/21 Golden Cross</option>
+              <option value="SUPERTREND_BULL">Supertrend Bullish Flip</option>
+              <option value="RSI_MOMENTUM">RSI Momentum (45-65)</option>
+              <option value="VWAP_RECLAIM">VWAP Reclaim & Push</option>
+              <option value="VOLUME_SHOCKER">Volume Shocker (&gt;2x Avg)</option>
+              <option value="HIGH_RR">High R:R Setup (&gt;1:2.5)</option>
+            </select>
+          </div>
+
+          <!-- Sector Filter -->
+          <div class="filter-group">
+            <span class="filter-label">Sector:</span>
+            <select id="sectorFilterSelect" class="custom-select">
+              <option value="ALL">All Sectors</option>
+              <option value="Banking & Finance">Banking & Finance</option>
+              <option value="Information Tech">IT & Software</option>
+              <option value="Automobile">Automobile</option>
+              <option value="Oil, Gas & Energy">Energy & Oil</option>
+              <option value="FMCG & Consumption">FMCG</option>
+              <option value="Metals & Mining">Metals</option>
+              <option value="Pharmaceuticals">Pharma & Healthcare</option>
+              <option value="Infrastructure & Capital Goods">Infra & Capital Goods</option>
+            </select>
+          </div>
+
+          <!-- Min AI Score Slider -->
+          <div class="filter-group filter-score">
+            <span class="filter-label">Min AI Score: <strong id="scoreSliderVal">0</strong></span>
+            <input type="range" id="minScoreRange" min="0" max="90" step="5" value="0" class="score-slider" />
+          </div>
+
+          <!-- View Mode (Table / Card Grid) -->
+          <div class="view-switch-group">
+            <button id="viewTableBtn" class="btn-view-mode active" title="Detailed Table View">📋 Table</button>
+            <button id="viewGridBtn" class="btn-view-mode" title="Visual Cards View">🎴 Cards</button>
+          </div>
+        </div>
+
+        <!-- ACTIVE FILTER CHIPS -->
+        <div class="active-chips-bar" id="activeChipsBar">
+          <span class="chips-label">Active Filters:</span>
+          <div id="filterChipsList" class="chips-wrapper"></div>
+          <button id="resetFiltersBtn" class="btn-reset-filters">Reset All</button>
+        </div>
+
+        <!-- SCANNER STATS BAR -->
+        <div class="scanner-meta-bar">
+          <div class="meta-item">
+            <span class="meta-label">Total Filtered:</span>
+            <span class="meta-val" id="filteredStocksCount">50</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Strong Buy:</span>
+            <span class="meta-val text-bull" id="statStrongBuy">0</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Buy:</span>
+            <span class="meta-val text-bull-light" id="statBuy">0</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Watch:</span>
+            <span class="meta-val text-watch" id="statWatch">0</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Sell:</span>
+            <span class="meta-val text-bear" id="statSell">0</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Avg AI Score:</span>
+            <span class="meta-val text-accent" id="statAvgScore">0</span>
+          </div>
+        </div>
+
+        <!-- SCANNER DATA CONTAINER (TABLE / GRID) -->
+        <div class="scanner-content-area">
+          <!-- TABLE VIEW -->
+          <div class="table-container" id="scannerTableView">
+            <table class="scanner-table" id="scannerTable">
+              <thead>
+                <tr>
+                  <th class="th-star">⭐</th>
+                  <th class="sortable" data-sort="symbol">Stock Symbol / Sector</th>
+                  <th class="sortable" data-sort="price">CMP (₹) / Chg %</th>
+                  <th class="sortable" data-sort="aiScore">AI Score / 100</th>
+                  <th class="sortable" data-sort="signal">Signal & Strength</th>
+                  <th>Indicators (EMA | RSI | MACD | VWAP | ST | Vol)</th>
+                  <th>Trade Plan (Entry | SL | T1 | T2)</th>
+                  <th class="sortable" data-sort="rr">Risk:Reward</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="scannerTableBody">
+                <!-- Dynamically populated rows -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- GRID CARDS VIEW -->
+          <div class="grid-container hidden" id="scannerGridView">
+            <!-- Dynamically populated cards -->
+          </div>
+
+          <!-- EMPTY STATE -->
+          <div class="empty-state hidden" id="scannerEmptyState">
+            <div class="empty-icon">🔎</div>
+            <h3>No Stocks Match Your Filter Criteria</h3>
+            <p>Try lowering the AI Score threshold or selecting "All Signals" & "All Sectors".</p>
+            <button class="btn-primary" id="btnResetFiltersEmpty">Reset All Filters</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= TAB 2: OPTIONS SCANNER (F&O) ================= -->
+      <section id="tab-options" class="tab-pane">
+        <div class="options-header-panel">
+          <div class="options-title-block">
+            <h2>⚡ NSE F&O & Index Options Hunter</h2>
+            <p>Smart Money Flow, PCR Extremes, Max Pain Shift, OI Spurts & Momentum CE/PE Triggers</p>
+          </div>
+
+          <div class="options-selectors">
+            <div class="selector-item">
+              <label>Underlying Index / Stock:</label>
+              <select id="optionUnderlyingSelect" class="custom-select select-lg">
+                <option value="NIFTY">NIFTY 50 (Spot: ₹24,850.40)</option>
+                <option value="BANKNIFTY">BANK NIFTY (Spot: ₹51,240.80)</option>
+                <option value="FINNIFTY">FIN NIFTY (Spot: ₹23,110.20)</option>
+                <option value="RELIANCE">RELIANCE (Spot: ₹2,980.50)</option>
+                <option value="HDFCBANK">HDFC BANK (Spot: ₹1,640.20)</option>
+              </select>
+            </div>
+
+            <div class="selector-item">
+              <label>Expiry Date:</label>
+              <select id="optionExpirySelect" class="custom-select">
+                <option value="CURRENT_WEEK">Current Weekly Expiry (Thu)</option>
+                <option value="NEXT_WEEK">Next Weekly Expiry</option>
+                <option value="MONTHLY">Monthly Expiry</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- KEY DERIVATIVES METRICS CARDS -->
+        <div class="derivatives-metrics-grid" id="optionsMetricsGrid">
+          <!-- Injected dynamically: PCR, Max Pain, ATM Strike, Total Call OI, Total Put OI, Overall Bias -->
+        </div>
+
+        <!-- HIGH CONVICTION INTRADAY OPTION BUY SIGNALS -->
+        <div class="options-trade-alerts-section">
+          <div class="section-badge-header">
+            <span class="badge-fire">🔥 TOP INTRADAY OPTION TRADES</span>
+            <span class="section-subtext">Algorithmic CE/PE Momentum Breakouts with High Gamma</span>
+          </div>
+          <div class="options-calls-grid" id="optionsBuySignalsGrid">
+            <!-- Dynamically populated high probability Option Buy cards -->
+          </div>
+        </div>
+
+        <!-- LIVE OPTION CHAIN & OPEN INTEREST SPREAD -->
+        <div class="options-chain-section">
+          <div class="chain-header">
+            <h3>📊 Strike-by-Strike Open Interest & Option Chain</h3>
+            <div class="chain-legend">
+              <span class="legend-chip bull">■ Put OI (Support)</span>
+              <span class="legend-chip bear">■ Call OI (Resistance)</span>
+              <span class="legend-chip highlight">★ ATM Strike</span>
+            </div>
+          </div>
+          <div class="table-container">
+            <table class="options-chain-table" id="optionsChainTable">
+              <thead>
+                <tr>
+                  <th colspan="4" class="th-calls">CALLS (CE)</th>
+                  <th class="th-strike">STRIKE</th>
+                  <th colspan="4" class="th-puts">PUTS (PE)</th>
+                </tr>
+                <tr>
+                  <th>OI (Lakhs)</th>
+                  <th>OI Chg %</th>
+                  <th>IV %</th>
+                  <th>LTP (₹)</th>
+                  <th class="th-strike-mid">STRIKE PRICE</th>
+                  <th>LTP (₹)</th>
+                  <th>IV %</th>
+                  <th>OI Chg %</th>
+                  <th>OI (Lakhs)</th>
+                </tr>
+              </thead>
+              <tbody id="optionsChainBody">
+                <!-- Dynamically populated option chain strikes -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= TAB 3: LIVE SIGNAL FEED ================= -->
+      <section id="tab-signals" class="tab-pane">
+        <div class="feed-header-bar">
+          <div class="feed-header-title">
+            <h2>📈 Real-Time Algorithmic Signal Stream</h2>
+            <p>Live chronological event log of incoming indicator triggers, breakouts, and AI confluence spikes</p>
+          </div>
+          <div class="feed-filter-actions">
+            <button class="feed-filter-btn active" data-type="ALL">All Triggers</button>
+            <button class="feed-filter-btn" data-type="STRONG_BUY">🟢 Strong Buy Only</button>
+            <button class="feed-filter-btn" data-type="BREAKOUT">⚡ Volume Breakouts</button>
+            <button class="feed-filter-btn" data-type="OPTIONS">🎯 Options Scalps</button>
+            <button id="clearFeedBtn" class="btn-outline-danger">Clear Log</button>
+          </div>
+        </div>
+
+        <div class="live-feed-timeline" id="liveFeedTimeline">
+          <!-- Dynamically populated live stream items with timestamp, icon, badge, setup details -->
+        </div>
+      </section>
+
+      <!-- ================= TAB 4: MY WATCHLIST ================= -->
+      <section id="tab-watchlist" class="tab-pane">
+        <div class="watchlist-header-bar">
+          <div class="watchlist-title-group">
+            <h2>⭐ Starred Indian Stocks & Alerts</h2>
+            <p>Your pinned portfolio stocks with real-time AI Confluence tracking and alert thresholds</p>
+          </div>
+          <div class="watchlist-actions">
+            <button id="exportWatchlistBtn" class="btn-outline">📥 Export CSV</button>
+            <button id="clearWatchlistBtn" class="btn-outline-danger">Clear All</button>
+          </div>
+        </div>
+
+        <div class="scanner-content-area">
+          <div class="table-container" id="watchlistTableView">
+            <table class="scanner-table">
+              <thead>
+                <tr>
+                  <th class="th-star">⭐</th>
+                  <th>Stock Symbol / Sector</th>
+                  <th>CMP (₹) / Chg %</th>
+                  <th>AI Score / 100</th>
+                  <th>Signal</th>
+                  <th>Indicators</th>
+                  <th>Trade Plan (Entry | SL | T1 | T2)</th>
+                  <th>Risk:Reward</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="watchlistTableBody">
+                <!-- Dynamically populated starred stocks -->
+              </tbody>
+            </table>
+          </div>
+          
+          <div class="empty-state hidden" id="watchlistEmptyState">
+            <div class="empty-icon">⭐</div>
+            <h3>Your Watchlist is Empty</h3>
+            <p>Click the star icon (⭐) next to any stock in the AI Scanner to monitor it here.</p>
+            <button class="btn-primary" id="btnExploreScannerEmpty">Explore AI Scanner</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= TAB 5: MARKET OVERVIEW & SECTOR HEATMAP ================= -->
+      <section id="tab-overview" class="tab-pane">
+        <div class="overview-grid">
+          
+          <!-- Market Breadth Card -->
+          <div class="overview-card breadth-card">
+            <div class="card-title-row">
+              <h3>📊 Market Breadth (NSE 500)</h3>
+              <span class="tag-status">Live</span>
+            </div>
+            <div class="breadth-visual-wrapper">
+              <div class="breadth-numbers">
+                <div class="b-col text-bull">
+                  <span class="b-count" id="breadthAdvCount">342</span>
+                  <span class="b-lbl">Advances (68.4%)</span>
+                </div>
+                <div class="b-col text-neutral">
+                  <span class="b-count" id="breadthUnchCount">26</span>
+                  <span class="b-lbl">Unchanged (5.2%)</span>
+                </div>
+                <div class="b-col text-bear">
+                  <span class="b-count" id="breadthDecCount">132</span>
+                  <span class="b-lbl">Declines (26.4%)</span>
+                </div>
+              </div>
+              <div class="breadth-bar-container">
+                <div class="b-bar-segment bull-bar" id="breadthAdvBar" style="width: 68.4%;"></div>
+                <div class="b-bar-segment unch-bar" id="breadthUnchBar" style="width: 5.2%;"></div>
+                <div class="b-bar-segment bear-bar" id="breadthDecBar" style="width: 26.4%;"></div>
+              </div>
+            </div>
+            <div class="breadth-sentiment" id="breadthSentimentNote">
+              🟢 Strong Bullish Breadth: Broad market participation with heavy buying in midcaps & largecaps.
+            </div>
+          </div>
+
+          <!-- Institutional Activity (FII / DII) -->
+          <div class="overview-card fii-dii-card">
+            <div class="card-title-row">
+              <h3>🏦 Institutional Flows (₹ Crores)</h3>
+              <span class="tag-status">Provisional</span>
+            </div>
+            <div class="fii-dii-details-grid">
+              <div class="fii-stat-box">
+                <span class="stat-name">FII Net Investment</span>
+                <span class="stat-big-val text-bull" id="fiiNetVal">+₹1,420.50 Cr</span>
+                <div class="stat-sub-row">
+                  <span>Gross Buy: ₹11,240 Cr</span>
+                  <span>Gross Sell: ₹9,820 Cr</span>
+                </div>
+              </div>
+              <div class="dii-stat-box">
+                <span class="stat-name">DII Net Investment</span>
+                <span class="stat-big-val text-bull" id="diiNetVal">+₹890.25 Cr</span>
+                <div class="stat-sub-row">
+                  <span>Gross Buy: ₹8,450 Cr</span>
+                  <span>Gross Sell: ₹7,560 Cr</span>
+                </div>
+              </div>
+            </div>
+            <div class="fii-sentiment-pill text-bull-bg">
+              <span>Dual Institutional Net Inflow (+₹2,310.75 Cr) supporting NIFTY rally</span>
+            </div>
+          </div>
+
+          <!-- India VIX & Sentiment Card -->
+          <div class="overview-card vix-card">
+            <div class="card-title-row">
+              <h3>⚡ India VIX & Volatility Index</h3>
+              <span class="tag-status" id="vixRegimeTag">Low Volatility</span>
+            </div>
+            <div class="vix-gauge-wrapper">
+              <div class="vix-reading-box">
+                <span class="vix-number" id="vixVal">12.85</span>
+                <span class="vix-change text-bull" id="vixChg">-0.42 (-3.16%)</span>
+              </div>
+              <div class="vix-range-bar">
+                <div class="vix-marker" id="vixMarker" style="left: 28%;"></div>
+              </div>
+              <div class="vix-scale-labels">
+                <span>10 (Calm)</span>
+                <span>15 (Normal)</span>
+                <span>20 (Elevated)</span>
+                <span>30+ (Extreme Panic)</span>
+              </div>
+            </div>
+            <p class="card-desc">India VIX below 14 indicates stable upward trend with minimal option premium decay risk.</p>
+          </div>
+
+          <!-- Sector Performance Heatmap -->
+          <div class="overview-card sector-heatmap-card full-width">
+            <div class="card-title-row">
+              <h3>🗺️ NSE Sector Performance Heatmap</h3>
+              <span class="sector-sort-note">Sorted by Relative Strength</span>
+            </div>
+            <div class="sector-grid" id="sectorHeatmapGrid">
+              <!-- Dynamically populated sector tiles -->
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+    </main>
+
+    <!-- FOOTER STATUS BAR -->
+    <footer class="terminal-footer">
+      <div class="footer-left">
+        <span class="footer-dot"></span>
+        <span class="footer-msg">Trade Junction AI Engine v2.4 Active | Scanned 50 NSE Equities + F&O Derivatives</span>
+      </div>
+      <div class="footer-right">
+        <span>Trading Hours: 09:15 - 15:30 IST</span>
+        <span class="footer-sep">•</span>
+        <span>Currency: INR (₹)</span>
+        <span class="footer-sep">•</span>
+        <span>Formula: EMA + RSI + MACD + VWAP + Supertrend + Volume Confluence</span>
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- ================= MODAL 1: INTERACTIVE TECHNICAL CHART MODAL ================= -->
+  <div id="chartModal" class="modal-overlay hidden">
+    <div class="modal-dialog modal-chart">
+      <div class="modal-header">
+        <div class="modal-stock-title">
+          <h2 id="chartModalSymbol">RELIANCE</h2>
+          <span class="modal-stock-name" id="chartModalCompany">Reliance Industries Ltd</span>
+          <span class="badge-sector" id="chartModalSector">Energy</span>
+          <span class="badge-signal" id="chartModalSignal">STRONG BUY</span>
+          <span class="modal-ai-score-pill">AI Score: <strong id="chartModalScore">88/100</strong></span>
+        </div>
+        <div class="modal-header-actions">
+          <div class="chart-timeframe-toggles" id="chartTfToggles">
+            <button class="chart-tf-btn" data-tf="5m">5m</button>
+            <button class="chart-tf-btn active" data-tf="15m">15m</button>
+            <button class="chart-tf-btn" data-tf="1h">1H</button>
+            <button class="chart-tf-btn" data-tf="1D">1D</button>
+          </div>
+          <button id="closeChartModalBtn" class="btn-close-modal">✕</button>
+        </div>
+      </div>
+
+      <div class="modal-body chart-modal-body">
+        <!-- Stock Live Metrics Bar -->
+        <div class="chart-metrics-strip">
+          <div class="strip-item">
+            <span class="strip-lbl">CMP (₹)</span>
+            <span class="strip-val" id="chartModalCMP">₹2,980.50</span>
+          </div>
+          <div class="strip-item">
+            <span class="strip-lbl">Day Range</span>
+            <span class="strip-val" id="chartModalDayRange">₹2,940.00 - ₹2,995.00</span>
+          </div>
+          <div class="strip-item">
+            <span class="strip-lbl">Entry Trigger</span>
+            <span class="strip-val text-accent" id="chartModalEntry">₹2,982.00</span>
+          </div>
+          <div class="strip-item">
+            <span class="strip-lbl">Stop Loss (SL)</span>
+            <span class="strip-val text-bear" id="chartModalSL">₹2,952.00</span>
+          </div>
+          <div class="strip-item">
+            <span class="strip-lbl">Target 1 (T1)</span>
+            <span class="strip-val text-bull" id="chartModalT1">₹3,027.00</span>
+          </div>
+          <div class="strip-item">
+            <span class="strip-lbl">Target 2 (T2)</span>
+            <span class="strip-val text-bull" id="chartModalT2">₹3,072.00</span>
+          </div>
+          <div class="strip-item">
+            <span class="strip-lbl">Risk:Reward</span>
+            <span class="strip-val text-bull" id="chartModalRR">1:3.0</span>
+          </div>
+        </div>
+
+        <!-- Chart Canvas Container -->
+        <div class="chart-canvas-wrapper">
+          <!-- Main Candlestick & Overlays Canvas -->
+          <div class="canvas-panel main-chart-panel">
+            <div class="chart-legend-overlay">
+              <span class="leg-item leg-ema9">■ EMA 9</span>
+              <span class="leg-item leg-ema21">■ EMA 21</span>
+              <span class="leg-item leg-vwap">┅ VWAP</span>
+              <span class="leg-item leg-st">■ Supertrend (10,3)</span>
+              <span class="leg-item leg-entry">― Entry</span>
+              <span class="leg-item leg-t1">― Target 1</span>
+              <span class="leg-item leg-t2">― Target 2</span>
+              <span class="leg-item leg-sl">― Stop Loss</span>
+            </div>
+            <canvas id="mainCandleCanvas"></canvas>
+          </div>
+
+          <!-- Sub Panel 1: RSI (14) -->
+          <div class="canvas-panel sub-chart-panel">
+            <div class="sub-chart-label">RSI (14) — <span id="chartRsiVal">64.2</span> (OB: 70 | OS: 30)</div>
+            <canvas id="rsiCanvas"></canvas>
+          </div>
+
+          <!-- Sub Panel 2: MACD (12, 26, 9) -->
+          <div class="canvas-panel sub-chart-panel">
+            <div class="sub-chart-label">MACD (12, 26, 9) — MACD Line: <span id="chartMacdVal" class="text-bull">+14.2</span> | Signal: <span id="chartSignalVal">+9.8</span></div>
+            <canvas id="macdCanvas"></canvas>
+          </div>
+        </div>
+
+        <!-- Trade Setup & AI Rationale -->
+        <div class="chart-rationale-box">
+          <div class="rationale-header">
+            <span>🧠 AI Trade Confluence Analysis & Setup Thesis</span>
+            <button id="btnAskClaudeModal" class="btn-action-chart btn-claude-mini">✨ Ask Claude AI Analysis</button>
+          </div>
+          <p id="chartModalRationaleText">
+            Strong multi-indicator alignment: Stock trading above 9 & 21 EMAs with a fresh Golden Cross. RSI at 64 indicates robust bullish momentum with room before overbought levels. Supertrend gave a green buy trigger at ₹2,955 with heavy 2.4x institutional volume breakout above intraday VWAP.
+          </p>
+          <div id="claudeLiveResponseArea" class="claude-response-card hidden">
+            <div class="claude-res-head">
+              <span>🤖 Claude 3.5 Sonnet Deep Verdict:</span>
+              <span class="claude-badge">Anthropic AI</span>
+            </div>
+            <div id="claudeResponseText" class="claude-res-body">Loading Claude AI Analysis...</div>
+          </div>
+          <div class="rationale-tags" id="chartModalTags">
+            <!-- Dynamic tags -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MODAL: CLAUDE AI CONFIGURATION & CHAT ================= -->
+  <div id="claudeAiModal" class="modal-overlay hidden">
+    <div class="modal-dialog modal-guide">
+      <div class="modal-header">
+        <div class="modal-stock-title">
+          <h2>🧠 Claude AI (Anthropic) Engine Integration</h2>
+          <span class="badge-ai">Sonnet 3.5</span>
+        </div>
+        <button id="closeClaudeModalBtn" class="btn-close-modal">✕</button>
+      </div>
+
+      <div class="modal-body guide-modal-body">
+        <div class="guide-intro">
+          <p>
+            Connect your <strong>Anthropic Claude API Key</strong> to unlock institutional AI analysis, deep trade rationale, and real-time chart thesis in natural Hindi/English.
+          </p>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 16px;">
+          <label for="claudeApiKeyInput" style="font-weight:700; margin-bottom:6px; display:block;">
+            Anthropic API Key (<span style="color:var(--accent);">sk-ant-...</span>):
+          </label>
+          <div class="input-with-icon">
+            <span class="field-icon">🔑</span>
+            <input type="password" id="claudeApiKeyInput" placeholder="Paste your sk-ant-... key here" style="padding-left:32px; font-family:var(--font-mono);" />
+          </div>
+          <small style="color:var(--text-muted); font-size:11px; margin-top:4px; display:block;">
+            Key is stored locally in your browser. Get it from <a href="https://console.anthropic.com/settings/keys" target="_blank" style="color:var(--accent); text-decoration:underline;">console.anthropic.com/settings/keys</a>.
+          </small>
+        </div>
+
+        <div style="display:flex; gap:10px; margin-bottom:20px;">
+          <button id="btnSaveClaudeKey" class="btn-primary">💾 Save API Key</button>
+          <button id="btnTestClaudeKey" class="btn-outline">🧪 Test Claude Connection</button>
+        </div>
+
+        <div id="claudeStatusAlert" class="auth-error-box hidden" style="margin-bottom: 16px;"></div>
+
+        <div class="score-tiers-box">
+          <h4>💡 What Claude AI Does in Trade Junction:</h4>
+          <ul style="padding-left:18px; font-size:12px; color:var(--text-muted); line-height:1.6;">
+            <li>Analyzes real-time EMA 9/21, RSI, MACD, VWAP, Supertrend confluence.</li>
+            <li>Calculates institutional risk-to-reward thesis before trade execution.</li>
+            <li>Provides direct Buy/Sell/Wait verdicts for Indian F&O and intraday equities.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MODAL 2: AI FORMULA & INDICATOR GUIDE ================= -->
+  <div id="guideModal" class="modal-overlay hidden">
+    <div class="modal-dialog modal-guide">
+      <div class="modal-header">
+        <div class="modal-stock-title">
+          <h2>📐 Trade Junction AI Confluence Algorithm</h2>
+          <span class="modal-stock-name">How the 0-100 Multi-Indicator Score is Calculated</span>
+        </div>
+        <button id="closeGuideModalBtn" class="btn-close-modal">✕</button>
+      </div>
+
+      <div class="modal-body guide-modal-body">
+        <div class="guide-intro">
+          <p>
+            The <strong>Trade Junction AI Score (0-100)</strong> eliminates emotional bias by computing a weighted algorithmic confluence across 6 core technical pillars. No single indicator makes a trade; high-probability trades happen when multiple independent indicators confirm each other.
+          </p>
+        </div>
+
+        <div class="indicators-breakdown-grid">
+          <!-- Pillar 1 -->
+          <div class="indicator-card">
+            <div class="ind-head">
+              <span class="ind-icon">📈</span>
+              <h4>1. EMA 9 / 21 Trend (Weight: 25%)</h4>
+            </div>
+            <p>Measures short-to-medium term trend direction. Exponential Moving Averages give higher weight to recent prices.</p>
+            <ul>
+              <li><strong>+25 pts:</strong> EMA 9 &gt; EMA 21 with expanding gap (Strong Uptrend)</li>
+              <li><strong>+15 pts:</strong> Fresh Golden Cross within last 5 candles</li>
+              <li><strong>0 pts:</strong> EMA 9 &lt; EMA 21 (Downtrend / Bearish)</li>
+            </ul>
+          </div>
+
+          <!-- Pillar 2 -->
+          <div class="indicator-card">
+            <div class="ind-head">
+              <span class="ind-icon">⚡</span>
+              <h4>2. RSI (14) Momentum (Weight: 20%)</h4>
+            </div>
+            <p>Measures velocity and magnitude of directional price movements on a 0-100 scale.</p>
+            <ul>
+              <li><strong>+20 pts:</strong> RSI between 55 and 68 (Strong Bullish Momentum with runway)</li>
+              <li><strong>+12 pts:</strong> Rebounding from Oversold (&lt;35) with bullish divergence</li>
+              <li><strong>-5 pts:</strong> Overbought (&gt;75) indicating exhaustion risk</li>
+            </ul>
+          </div>
+
+          <!-- Pillar 3 -->
+          <div class="indicator-card">
+            <div class="ind-head">
+              <span class="ind-icon">📊</span>
+              <h4>3. MACD (12, 26, 9) (Weight: 15%)</h4>
+            </div>
+            <p>Moving Average Convergence Divergence tracks trend strength and momentum acceleration.</p>
+            <ul>
+              <li><strong>+15 pts:</strong> MACD Line &gt; Signal Line with growing positive green histogram</li>
+              <li><strong>+8 pts:</strong> Bullish centerline crossover (crossing above zero)</li>
+              <li><strong>0 pts:</strong> Bearish histogram expansion</li>
+            </ul>
+          </div>
+
+          <!-- Pillar 4 -->
+          <div class="indicator-card">
+            <div class="ind-head">
+              <span class="ind-icon">🎯</span>
+              <h4>4. VWAP Intraday Anchor (Weight: 15%)</h4>
+            </div>
+            <p>Volume Weighted Average Price is the ultimate benchmark used by institutional desks and mutual funds.</p>
+            <ul>
+              <li><strong>+15 pts:</strong> Price trading above VWAP with successful pullback test & bounce</li>
+              <li><strong>+10 pts:</strong> Intraday VWAP breakout on high volume</li>
+              <li><strong>0 pts:</strong> Price trapped below VWAP (selling pressure)</li>
+            </ul>
+          </div>
+
+          <!-- Pillar 5 -->
+          <div class="indicator-card">
+            <div class="ind-head">
+              <span class="ind-icon">🛡️</span>
+              <h4>5. Supertrend (10, 3) (Weight: 15%)</h4>
+            </div>
+            <p>ATR (Average True Range) based volatility trailing stop loss and regime filter.</p>
+            <ul>
+              <li><strong>+15 pts:</strong> Green Supertrend with price holding comfortably above the ATR stop line</li>
+              <li><strong>+10 pts:</strong> Fresh Bullish Flip from red to green in current timeframe</li>
+              <li><strong>0 pts:</strong> Red Supertrend active (Bearish resistance overhead)</li>
+            </ul>
+          </div>
+
+          <!-- Pillar 6 -->
+          <div class="indicator-card">
+            <div class="ind-head">
+              <span class="ind-icon">💥</span>
+              <h4>6. Volume Surge & Smart Money (Weight: 10%)</h4>
+            </div>
+            <p>Validates price moves by comparing current candle volume against the 20-period moving average.</p>
+            <ul>
+              <li><strong>+10 pts:</strong> Volume &gt; 2.0x 20-day Average (Volume Shocker)</li>
+              <li><strong>+6 pts:</strong> Volume &gt; 1.3x 20-day Average</li>
+              <li><strong>0 pts:</strong> Low dry volume breakout (potential bull trap)</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="score-tiers-box">
+          <h4>🏆 Actionable Signal Tiers</h4>
+          <div class="tiers-row">
+            <div class="tier-badge strong-buy">🟢 STRONG BUY: 80 - 100</div>
+            <div class="tier-badge buy">🟢 BUY: 65 - 79</div>
+            <div class="tier-badge watch">🟡 WATCH: 45 - 64</div>
+            <div class="tier-badge sell">🔴 SELL: 25 - 44</div>
+            <div class="tier-badge strong-sell">🔴 STRONG SELL: 0 - 24</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MODAL 3: USER AUTHENTICATION / LOGIN OVERLAY ================= -->
+  <div id="authOverlay" class="auth-overlay hidden">
+    <div class="auth-card">
+      <div class="auth-header">
+        <div class="auth-logo-icon">⚡</div>
+        <h2>Trade Junction <span class="badge-ai">AI PRO</span></h2>
+        <p>Institutional NSE/BSE Trading Terminal Access</p>
+      </div>
+
+      <!-- Tab Switcher (Login / Register) -->
+      <div class="auth-tabs">
+        <button id="tabAuthLogin" class="auth-tab-btn active">Sign In</button>
+        <button id="tabAuthRegister" class="auth-tab-btn">Create Account</button>
+      </div>
+
+      <!-- LOGIN FORM -->
+      <form id="loginForm" class="auth-form">
+        <div class="form-group">
+          <label for="loginUsername">Username / ID</label>
+          <div class="input-with-icon">
+            <span class="field-icon">👤</span>
+            <input type="text" id="loginUsername" placeholder="Enter username (e.g. admin)" required autocomplete="username" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="loginPassword">Password</label>
+          <div class="input-with-icon">
+            <span class="field-icon">🔒</span>
+            <input type="password" id="loginPassword" placeholder="Enter password (e.g. password123)" required autocomplete="current-password" />
+            <button type="button" id="toggleLoginPasswordBtn" class="btn-toggle-pwd">👁️</button>
+          </div>
+        </div>
+
+        <div class="form-options-row">
+          <label class="remember-label">
+            <input type="checkbox" id="rememberMeCheck" checked />
+            <span>Keep me logged in</span>
+          </label>
+        </div>
+
+        <div id="authErrorMessage" class="auth-error-box hidden"></div>
+
+        <button type="submit" id="btnSubmitLogin" class="btn-auth-submit">
+          <span>Unlock Terminal ➔</span>
+        </button>
+
+        <div class="demo-credentials-box">
+          <span class="demo-title">🔑 Quick Demo Logins:</span>
+          <div class="demo-buttons-row">
+            <button type="button" class="btn-quick-demo" data-user="admin" data-pass="password123">
+              <strong>Admin</strong> (password123)
+            </button>
+            <button type="button" class="btn-quick-demo" data-user="trader" data-pass="trade2026">
+              <strong>Trader</strong> (trade2026)
+            </button>
+          </div>
+        </div>
+      </form>
+
+      <!-- REGISTRATION FORM -->
+      <form id="registerForm" class="auth-form hidden">
+        <div class="form-group">
+          <label for="regFullName">Full Name</label>
+          <div class="input-with-icon">
+            <span class="field-icon">🏷️</span>
+            <input type="text" id="regFullName" placeholder="e.g. Rahul Sharma" required />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="regUsername">Choose Username</label>
+          <div class="input-with-icon">
+            <span class="field-icon">👤</span>
+            <input type="text" id="regUsername" placeholder="Choose a username" required />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="regPassword">Create Password</label>
+          <div class="input-with-icon">
+            <span class="field-icon">🔒</span>
+            <input type="password" id="regPassword" placeholder="Minimum 6 characters" required />
+          </div>
+        </div>
+
+        <div id="regErrorMessage" class="auth-error-box hidden"></div>
+
+        <button type="submit" id="btnSubmitRegister" class="btn-auth-submit">
+          <span>Create Account & Enter ➔</span>
+        </button>
+      </form>
+
+      <div class="auth-footer">
+        <span>🔒 256-Bit Encrypted Institutional Terminal Session</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main JavaScript Modules -->
+  <script src="js/auth.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/marketData.js"></script>
+  <script src="js/chart.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
