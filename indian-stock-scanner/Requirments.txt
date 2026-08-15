@@ -1,0 +1,3 @@
+# Trade Junction AI - Python requirements
+# Note: server.py uses standard built-in Python libraries (urllib, http.server, json, concurrent.futures)
+# No external pip dependencies required.
