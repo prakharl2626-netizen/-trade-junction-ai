@@ -1,0 +1,2 @@
+# Trade Junction AI backend uses only Python standard-library modules.
+# No external pip packages are required.
