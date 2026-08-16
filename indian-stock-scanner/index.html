@@ -13,6 +13,17 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
   
+  <style>
+    .brand-logo { gap: 10px; }
+    .brand-logo-image {
+      width: 44px; height: 44px; flex: 0 0 44px; object-fit: cover; border-radius: 50%;
+      border: 2px solid rgba(125, 255, 65, .72); box-shadow: 0 0 0 3px rgba(20, 28, 42, .9), 0 0 20px rgba(79, 228, 75, .30);
+      transition: transform .25s ease, box-shadow .25s ease;
+    }
+    .brand-logo:hover .brand-logo-image { transform: rotate(-5deg) scale(1.07); box-shadow: 0 0 0 3px rgba(20, 28, 42, .9), 0 0 28px rgba(79, 228, 75, .5); }
+    .brand-logo .logo-icon { display: none; }
+    @media (max-width: 640px) { .brand-logo-image { width: 36px; height: 36px; flex-basis: 36px; } }
+  </style>
   <!-- Main Stylesheet -->
   <link rel="stylesheet" href="css/styles.css" />
   <link rel="stylesheet" href="css/insights.css" />
