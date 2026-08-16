@@ -14,6 +14,7 @@ import concurrent.futures
 import time
 import os
 import sys
+import xml.etree.ElementTree as ET
 
 PORT = int(os.environ.get("PORT", 8080))
 DIRECTORY = os.path.dirname(os.path.abspath(__file__))
@@ -88,6 +89,8 @@ cache = {
     "indices": None,
     "indices_time": 0,
     "charts": {},
+    "news": None,
+    "news_time": 0,
 }
 CACHE_TTL = 10  # 10 seconds live cache
 
@@ -260,6 +263,71 @@ def get_stock_candles_data(symbol, timeframe="15m"):
         return []
 
 
+NEWS_CACHE_TTL = 300
+
+
+def fetch_market_news():
+    """Return recent India-market headlines from Google News RSS with a safe fallback."""
+    now = time.time()
+    if cache["news"] and (now - cache["news_time"]) < NEWS_CACHE_TTL:
+        return cache["news"]
+
+    fallback = [
+        {"title": "Indian market news is loading", "source": "Trade Junction", "url": "https://news.google.com/search?q=Indian%20stock%20market", "published": ""},
+    ]
+    rss_url = "https://news.google.com/rss/search?q=Indian+stock+market+NSE+BSE&hl=en-IN&gl=IN&ceid=IN:en"
+    try:
+        request = urllib.request.Request(rss_url, headers={"User-Agent": "TradeJunctionAI/1.0"})
+        with urllib.request.urlopen(request, timeout=8) as response:
+            root = ET.fromstring(response.read())
+        articles = []
+        for item in root.findall("./channel/item")[:10]:
+            title = (item.findtext("title") or "Market update").strip()
+            source = item.find("source")
+            articles.append({
+                "title": title,
+                "source": (source.text or "Market news").strip() if source is not None else "Market news",
+                "url": (item.findtext("link") or "https://news.google.com").strip(),
+                "published": (item.findtext("pubDate") or "").strip(),
+            })
+        if articles:
+            cache["news"] = articles
+            cache["news_time"] = now
+            return articles
+    except Exception:
+        pass
+    return cache["news"] or fallback
+
+
+def get_scanner_alerts():
+    """Create transparent in-app alerts from the existing live scanner data."""
+    stocks = get_live_stocks_data()
+    alerts = []
+    for stock in stocks:
+        change = stock.get("chgPct", 0)
+        volume = stock.get("volume", 0)
+        if abs(change) >= 2:
+            direction = "Bullish" if change > 0 else "Bearish"
+            alerts.append({
+                "symbol": stock["symbol"],
+                "name": stock["name"],
+                "type": f"{direction} momentum",
+                "message": f"{change:+.2f}% today",
+                "severity": "positive" if change > 0 else "negative",
+                "price": stock.get("cmp", 0),
+            })
+        elif volume >= 3000000:
+            alerts.append({
+                "symbol": stock["symbol"],
+                "name": stock["name"],
+                "type": "High-volume watch",
+                "message": "Elevated trading activity",
+                "severity": "neutral",
+                "price": stock.get("cmp", 0),
+            })
+    return sorted(alerts, key=lambda item: abs(float(item["message"].split("%")[0])) if "%" in item["message"] else 0, reverse=True)[:12]
+
+
 class TradeJunctionHTTPHandler(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=DIRECTORY, **kwargs)
@@ -321,6 +389,20 @@ class TradeJunctionHTTPHandler(http.server.SimpleHTTPRequestHandler):
                 "data": candles
             }
             self.wfile.write(json.dumps(payload).encode("utf-8"))
+            return
+
+        elif path == "/api/live/news":
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.end_headers()
+            self.wfile.write(json.dumps({"success": True, "data": fetch_market_news()}).encode("utf-8"))
+            return
+
+        elif path == "/api/live/alerts":
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.end_headers()
+            self.wfile.write(json.dumps({"success": True, "data": get_scanner_alerts()}).encode("utf-8"))
             return
 
         elif path == "/api/status":
