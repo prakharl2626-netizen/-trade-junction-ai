@@ -37,7 +37,8 @@ body.theme-dark { background: radial-gradient(circle at 12% -10%, #172554 0, tra
 .dashboard-opp small { display:block; margin-top:3px; color:#8090aa; font-size:10px; }
 .dashboard-opp-score { color:#63e6be; font:800 12px JetBrains Mono,monospace; }
 .dashboard-opp-signal { color:#94a3b8; font:700 10px Inter,sans-serif; text-align:right; }
-.indices-ticker-tape { display:grid !important; grid-template-columns:repeat(5,minmax(140px,1fr)); gap:9px; padding:0 18px 15px !important; overflow:visible !important; }
+.indices-ticker-tape { display:grid !important; grid-template-columns:repeat(4,minmax(140px,1fr)); gap:9px; padding:0 18px 15px !important; overflow:visible !important; }
+.indices-ticker-tape .index-ticker-item:nth-child(3), .indices-ticker-tape .index-ticker-item:nth-child(n+6) { display:none !important; }
 .index-ticker-item { min-width:0 !important; border-radius:11px !important; border:1px solid var(--dash-border) !important; background:rgba(10,18,31,.7) !important; padding:11px 13px !important; }
 .index-name { font-size:10px !important; color:#91a3bb !important; }
 .index-price { font-size:14px !important; color:#f2f7ff !important; }
