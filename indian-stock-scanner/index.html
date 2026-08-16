@@ -15,6 +15,7 @@
   
   <!-- Main Stylesheet -->
   <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/insights.css" />
 </head>
 <body class="theme-dark">
   <div id="app" class="app-layout">
@@ -940,5 +941,33 @@
   <script src="js/marketData.js"></script>
   <script src="js/chart.js"></script>
   <script src="js/app.js"></script>
+  <!-- MARKET INSIGHTS: local watchlist, scanner alerts, and public market headlines -->
+  <aside class="tj-insights" id="tjInsights" aria-label="Market insights">
+    <div class="tj-insights-head">
+      <div><span class="tj-insights-kicker">TRADE JUNCTION</span><h3>Market Insights</h3></div>
+      <button class="tj-insights-close" id="tjInsightsClose" aria-label="Close insights">×</button>
+    </div>
+    <div class="tj-insights-tabs" role="tablist">
+      <button class="tj-insights-tab active" data-insights-tab="news">News</button>
+      <button class="tj-insights-tab" data-insights-tab="alerts">Scanner <span id="tjAlertCount">0</span></button>
+      <button class="tj-insights-tab" data-insights-tab="watchlist">Watchlist</button>
+    </div>
+    <section class="tj-insights-panel active" data-insights-panel="news">
+      <p class="tj-insights-note">Latest India-market headlines</p>
+      <div id="tjNewsList" class="tj-insights-list"><div class="tj-insights-loading">Loading market news…</div></div>
+    </section>
+    <section class="tj-insights-panel" data-insights-panel="alerts">
+      <p class="tj-insights-note">Rule-based signals from the live scanner. Not investment advice.</p>
+      <div id="tjAlertsList" class="tj-insights-list"><div class="tj-insights-loading">Scanning stocks…</div></div>
+    </section>
+    <section class="tj-insights-panel" data-insights-panel="watchlist">
+      <p class="tj-insights-note">Saved only in this browser.</p>
+      <div class="tj-watchlist-add"><select id="tjWatchlistSelect" aria-label="Stock to add"><option value="">Choose a stock</option></select><button id="tjWatchlistAdd">Add</button></div>
+      <div id="tjWatchlistList" class="tj-insights-list"></div>
+    </section>
+  </aside>
+  <button class="tj-insights-toggle" id="tjInsightsToggle" aria-label="Open market insights">✦ Insights</button>
+
+  <script src="js/insights.js"></script>
 </body>
 </html>
