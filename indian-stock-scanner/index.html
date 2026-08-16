@@ -23,6 +23,34 @@
     .brand-logo:hover .brand-logo-image { transform: rotate(-5deg) scale(1.07); box-shadow: 0 0 0 3px rgba(20, 28, 42, .9), 0 0 28px rgba(79, 228, 75, .5); }
     .brand-logo .logo-icon { display: none; }
     @media (max-width: 640px) { .brand-logo-image { width: 36px; height: 36px; flex-basis: 36px; } }
+
+    /* Advanced terminal polish: visual-only, no API or trading behavior changes. */
+    body.theme-dark { background: radial-gradient(900px 500px at 2% -10%, rgba(14, 165, 233, .10), transparent 60%), radial-gradient(700px 430px at 98% 0%, rgba(34, 197, 94, .09), transparent 58%), #080c14; }
+    .terminal-header { background: linear-gradient(115deg, rgba(10, 18, 31, .98), rgba(14, 27, 46, .94)) !important; box-shadow: 0 14px 32px rgba(0, 0, 0, .22); }
+    .header-top { position: relative; }
+    .header-top:after { content: ""; position: absolute; left: 18px; right: 18px; bottom: -1px; height: 1px; background: linear-gradient(90deg, transparent, rgba(56, 189, 248, .45), rgba(74, 222, 128, .45), transparent); }
+    .market-status-pill, .live-data-badge { backdrop-filter: blur(12px); box-shadow: inset 0 1px 0 rgba(255,255,255,.05), 0 6px 18px rgba(0,0,0,.16); }
+    .indices-ticker-tape { gap: 8px; padding-top: 8px !important; }
+    .index-ticker-item { position: relative; overflow: hidden; border-radius: 10px !important; background: linear-gradient(145deg, rgba(22, 34, 55, .82), rgba(11, 18, 31, .85)) !important; transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease; }
+    .index-ticker-item:before { content: ""; position: absolute; inset: 0 auto 0 0; width: 2px; background: linear-gradient(#38bdf8, #22c55e); opacity: .8; }
+    .index-ticker-item:hover { transform: translateY(-2px); border-color: rgba(56, 189, 248, .5) !important; box-shadow: 0 9px 20px rgba(0,0,0,.2); }
+    .terminal-nav { backdrop-filter: blur(14px); background: rgba(9, 15, 27, .88) !important; position: sticky; top: 0; z-index: 20; }
+    .nav-tab { transition: color .2s ease, background .2s ease, transform .2s ease; }
+    .nav-tab:hover { transform: translateY(-1px); }
+    .scanner-toolbar, .scanner-meta-bar, .table-container, .options-header-panel, .overview-card, .feed-header-bar, .watchlist-header-bar { box-shadow: 0 12px 28px rgba(0,0,0,.16); }
+    .scanner-toolbar, .options-header-panel, .feed-header-bar, .watchlist-header-bar { border-color: rgba(71, 85, 105, .45) !important; background: linear-gradient(145deg, rgba(19, 30, 49, .9), rgba(12, 20, 34, .86)) !important; }
+    .stock-grid-card, .options-trade-card, .overview-card { transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease; }
+    .stock-grid-card:hover, .options-trade-card:hover, .overview-card:hover { transform: translateY(-3px); border-color: rgba(56, 189, 248, .45); box-shadow: 0 15px 30px rgba(0,0,0,.24); }
+    .btn-primary, .btn-action-chart { box-shadow: 0 5px 14px rgba(14,165,233,.16); transition: transform .18s ease, box-shadow .18s ease; }
+    .btn-primary:hover, .btn-action-chart:hover { transform: translateY(-1px); box-shadow: 0 9px 20px rgba(14,165,233,.26); }
+    .table-container { border-radius: 13px; overflow: hidden; }
+    .scanner-table tbody tr { transition: background .16s ease; }
+    .scanner-table tbody tr:hover { background: linear-gradient(90deg, rgba(14,165,233,.075), rgba(34,197,94,.035)) !important; }
+    .modal-dialog { box-shadow: 0 28px 85px rgba(0,0,0,.62), 0 0 0 1px rgba(148,163,184,.14); }
+    ::-webkit-scrollbar { width: 9px; height: 9px; }
+    ::-webkit-scrollbar-track { background: #0b1220; }
+    ::-webkit-scrollbar-thumb { background: linear-gradient(#1e577a, #24543c); border-radius: 10px; border: 2px solid #0b1220; }
+    @media (max-width: 720px) { .terminal-nav { top: 0; } .indices-ticker-tape { padding: 8px 10px 12px !important; } .index-ticker-item { min-width: 150px !important; } }
   </style>
   <!-- Main Stylesheet -->
   <link rel="stylesheet" href="css/styles.css" />
