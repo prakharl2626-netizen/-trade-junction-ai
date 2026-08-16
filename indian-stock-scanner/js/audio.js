@@ -130,3 +130,16 @@ class SoundEngine {
 }
 
 window.soundEngine = new SoundEngine();
+
+// Register the existing service worker so PWABuilder can detect an active PWA worker.
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./service-worker.js')
+      .then(registration => {
+        console.log('Trade Junction service worker registered:', registration.scope);
+      })
+      .catch(error => {
+        console.error('Trade Junction service worker registration failed:', error);
+      });
+  });
+}

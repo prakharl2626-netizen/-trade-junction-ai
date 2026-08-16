@@ -13,6 +13,7 @@
   "background_color": "#0b0f19",
   "theme_color": "#0b0f19",
   "categories": ["finance", "business", "productivity"],
+  "prefer_related_applications": false,
   "icons": [
     {
       "src": "./icons/trade-junction-192.png",
