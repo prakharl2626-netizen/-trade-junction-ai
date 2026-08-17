@@ -20,7 +20,9 @@ class TradeJunctionApp {
     this.liveFeed = [];
     this.isLiveSimActive = true;
     this.simInterval = null;
+    this.autoSyncInterval = null;
     this.clockInterval = null;
+    this.isMarketSyncing = false;
 
     this.selectedOptionUnderlying = 'NIFTY';
     this.selectedOptionExpiry = 'CURRENT_WEEK';
@@ -48,6 +50,7 @@ class TradeJunctionApp {
     // but it must never block the Signals tab from opening.
     this.seedInitialSignalFeed();
     this.startLiveSimulation();
+    this.startAutoSync();
 
     // Refresh quotes in the background after the interactive terminal is ready.
     await this.syncRealMarketData();
@@ -245,6 +248,9 @@ class TradeJunctionApp {
   }
 
   async syncRealMarketData() {
+    if (this.isMarketSyncing) return;
+    this.isMarketSyncing = true;
+
     const syncBadge = document.getElementById('liveDataSyncBadge');
     const syncText = document.getElementById('liveDataSyncText');
     const syncTimeLabel = document.getElementById('lastSyncTimeLabel');
@@ -268,6 +274,7 @@ class TradeJunctionApp {
     } catch (e) {
       if (syncText) syncText.textContent = '🟡 SIMULATION FEED';
     } finally {
+      this.isMarketSyncing = false;
       if (refreshBtn) refreshBtn.classList.remove('loading');
       this.renderIndicesTicker();
       this.renderScanner();
@@ -1386,12 +1393,29 @@ class TradeJunctionApp {
     }, 1000);
   }
 
+  // Real NSE auto-sync. Simulation stays available only as an offline fallback.
+  startAutoSync() {
+    if (this.autoSyncInterval) clearInterval(this.autoSyncInterval);
+    this.autoSyncInterval = setInterval(() => {
+      if (this.isLiveSimActive) this.syncRealMarketData();
+    }, 20000);
+  }
+
   // Live Exchange Tick Simulation Loop
   startLiveSimulation() {
     if (this.simInterval) clearInterval(this.simInterval);
 
     this.simInterval = setInterval(() => {
       if (!this.isLiveSimActive) return;
+
+      // When the backend is receiving the real NSE feed, do not overwrite it
+      // with browser-generated ticks. The simulation is an offline fallback only.
+      if (window.marketEngine.isLiveConnected) {
+        if (this.activeTab === 'scanner') this.renderScanner();
+        if (this.activeTab === 'watchlist') this.renderWatchlist();
+        if (this.activeTab === 'options') this.renderOptionsScanner();
+        return;
+      }
 
       // Pick 2-4 random stocks to tick
       const countToTick = 2 + Math.floor(Math.random() * 3);
