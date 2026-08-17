@@ -43,12 +43,14 @@ class TradeJunctionApp {
     this.renderScanner();
     this.renderOptionsScanner();
     this.renderMarketOverview();
-    
-    // Initial Real-time Live Quotes Sync from NSE
-    await this.syncRealMarketData();
 
-    this.startLiveSimulation();
+    // Start the terminal feed immediately. Live API sync can be slow or unavailable,
+    // but it must never block the Signals tab from opening.
     this.seedInitialSignalFeed();
+    this.startLiveSimulation();
+
+    // Refresh quotes in the background after the interactive terminal is ready.
+    await this.syncRealMarketData();
   }
 
   updateUserHeaderInfo() {
