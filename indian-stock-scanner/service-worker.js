@@ -1,4 +1,4 @@
-const CACHE_NAME = 'trade-junction-v1';
+const CACHE_NAME = 'trade-junction-v2';
 const APP_SHELL = [
   './',
   './index.html',
